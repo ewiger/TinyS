@@ -1,5 +1,7 @@
 # TinyS — TL;DR
 
+> If you are an AI developer wanting to learn rust, you can take all your python knowledge and put it into TinyS ;-)
+
 **Python-shaped syntax, Rust semantics, native binaries.**
 
 You write indentation-based `.sn` source; it transpiles to Rust and compiles to
