@@ -20,6 +20,20 @@ def maximum(left: i32, right: i32) -> i32:
     return right
 ```
 
+## Installation
+
+Install the TinyS CLI from [crates.io](https://crates.io/crates/tinys):
+
+```bash
+cargo install tinys
+```
+
+Or add TinyS as a dependency to a Rust project:
+
+```bash
+cargo add tinys
+```
+
 ## Project status
 
 TinyS is an experimental language design and compiler project.
