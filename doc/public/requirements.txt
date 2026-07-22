@@ -1,0 +1,6 @@
+# Documentation toolchain for the TinyS manual.
+# Install with:  pip install -r doc/public/requirements.txt
+# Build with:    mkdocs build --config-file doc/public/mkdocs.yml
+# Serve locally: mkdocs serve  --config-file doc/public/mkdocs.yml
+
+mkdocs-material>=9.5,<10

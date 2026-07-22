@@ -1,0 +1,23 @@
+/* TinyS manual — small theme touch-ups on top of Material for MkDocs. */
+
+:root {
+  --md-code-font: "Roboto Mono", SFMono-Regular, Consolas, monospace;
+}
+
+/* Give the landing hero a little breathing room. */
+.tinys-tagline {
+  font-size: 1.15rem;
+  opacity: 0.85;
+}
+
+/* Comparison tables (TinyS ↔ Rust) read better with a touch more padding. */
+.md-typeset table:not([class]) th,
+.md-typeset table:not([class]) td {
+  padding: 0.6em 0.9em;
+}
+
+/* Keep wide code blocks and tables scrolling inside their own box. */
+.md-typeset pre > code,
+.md-typeset .md-typeset__scrollwrap {
+  overflow-x: auto;
+}

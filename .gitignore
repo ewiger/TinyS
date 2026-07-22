@@ -5,3 +5,6 @@ Cargo.lock
 # TinyS generated Rust + binaries (emitted next to sources)
 **/tinys-generated/
 examples/target/
+
+# MkDocs build output (published by CI, not committed)
+doc/public/site/

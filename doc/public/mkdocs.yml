@@ -1,0 +1,145 @@
+site_name: TinyS
+site_description: >-
+  TinyS — a small statically typed language with Python-shaped syntax and
+  Rust-oriented semantics. Write indentation-based .sn source; it transpiles to
+  Rust and compiles to a native binary.
+site_author: TinyS contributors
+site_url: https://ewiger.github.io/TinyS/
+
+repo_name: ewiger/TinyS
+repo_url: https://github.com/ewiger/TinyS
+edit_uri: edit/main/doc/public/docs/
+copyright: Copyright &copy; TinyS contributors
+
+# Built into doc/public/site (ignored by git, published by CI).
+site_dir: site
+docs_dir: docs
+
+theme:
+  name: material
+  language: en
+  icon:
+    logo: material/language-rust
+    repo: fontawesome/brands/github
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to system preference
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - navigation.indexes
+    - navigation.tracking
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - content.action.edit
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ewiger/TinyS
+      name: TinyS on GitHub
+  generator: false
+
+plugins:
+  - search
+
+markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      title: On this page
+  - pymdownx.betterem
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.keys
+  - pymdownx.smartsymbols
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Hello, world: getting-started/hello-world.md
+      - Tutorial — a guided tour: getting-started/tutorial.md
+  - Language guide:
+      - guide/index.md
+      - Syntax overview: guide/syntax.md
+      - Variables & mutability: guide/variables.md
+      - Functions: guide/functions.md
+      - Ownership & borrowing: guide/ownership.md
+      - Structs & enums: guide/structs-and-enums.md
+      - Pattern matching: guide/pattern-matching.md
+      - Control flow: guide/control-flow.md
+      - Traits: guide/traits.md
+      - Generics: guide/generics.md
+      - Error handling: guide/error-handling.md
+      - Collections & tuples: guide/collections.md
+      - Closures: guide/closures.md
+      - Modules & imports: guide/modules.md
+  - Advanced:
+      - advanced/index.md
+      - Lifetimes: advanced/lifetimes.md
+      - Async: advanced/async.md
+      - Rust interoperability: advanced/interop.md
+      - Macros: advanced/macros.md
+      - Unsafe: advanced/unsafe.md
+      - Reading the generated Rust: advanced/generated-rust.md
+  - Examples: examples/index.md
+  - Reference:
+      - reference/index.md
+      - CLI commands: reference/cli.md
+      - Keywords: reference/keywords.md
+      - TinyS ↔ Rust cheat sheet: reference/cheatsheet.md
+  - About:
+      - Language status: about/status.md
+      - Roadmap: about/roadmap.md
+      - Contributing: about/contributing.md
