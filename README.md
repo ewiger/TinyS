@@ -1182,9 +1182,7 @@ The goal is to make Rust’s strongest ideas easier to read and write.
 
 ## License
 
-No license has been selected yet.
-
-Until a license is added, the repository should be considered source-available but not automatically licensed for redistribution or reuse.
+TinyS is licensed under the [MIT License](LICENSE).
 
 ## Contributing
 

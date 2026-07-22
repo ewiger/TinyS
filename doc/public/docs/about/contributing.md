@@ -78,6 +78,4 @@ the **Actions** tab (the workflow allows `workflow_dispatch`).
 
 ## License
 
-No license has been selected yet. Until one is added, the repository should be
-considered source-available but not automatically licensed for redistribution or
-reuse.
+TinyS is licensed under the [MIT License](https://github.com/ewiger/TinyS/blob/main/LICENSE).
