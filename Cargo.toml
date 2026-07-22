@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 description = "TinyS — a Python-shaped, Rust-semantics language that transpiles .sn source to Rust"
 license = "MIT"
+repository = "https://github.com/ewiger/TinyS"
+homepage = "https://ewiger.github.io/TinyS/"
+readme = "README.md"
+keywords = ["language", "compiler", "transpiler", "rust", "python"]
+categories = ["compilers", "development-tools"]
 
 [[bin]]
 name = "tinys"
