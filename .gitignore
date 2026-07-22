@@ -1,0 +1,7 @@
+# Rust / Cargo build artifacts
+/target
+Cargo.lock
+
+# TinyS generated Rust + binaries (emitted next to sources)
+**/tinys-generated/
+examples/target/

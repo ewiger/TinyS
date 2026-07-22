@@ -1,0 +1,18 @@
+// Functions, explicit types, early returns, and implicit tail returns.
+
+def add(left: i64, right: i64) -> i64:
+    return left + right
+
+def square(value: i32) -> i32:
+    value * value
+
+def maximum(left: i32, right: i32) -> i32:
+    if left >= right:
+        return left
+
+    return right
+
+def main() -> void:
+    print(add(3, 4))
+    print(square(5))
+    print(maximum(10, 20))

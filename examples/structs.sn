@@ -1,0 +1,27 @@
+// Structs, associated functions, methods with borrowed receivers.
+
+#[derive(Debug, Clone)]
+struct Point:
+    x: f64
+    y: f64
+
+impl Point:
+
+    def new(x: f64, y: f64) -> Point:
+        return Point(x=x, y=y)
+
+    def length(self: ref Self) -> f64:
+        squared = self.x * self.x + self.y * self.y
+        return squared.sqrt()
+
+    def scaled(self: ref Self, factor: f64) -> Point:
+        return Point(x=self.x * factor, y=self.y * factor)
+
+def main() -> void:
+    origin = Point.new(3.0, 4.0)
+    print(origin.length())
+
+    bigger = origin.scaled(2.0)
+    print(bigger.length())
+
+    debug(ref bigger)

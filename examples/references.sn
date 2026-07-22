@@ -1,0 +1,19 @@
+// Explicit borrowing (ref / mut ref), dereferencing with `at`.
+
+def increment(value: mut ref i32) -> void:
+    at value += 1
+
+def sum(values: ref list[i32]) -> i32:
+    mut total = 0
+    for value in values:
+        total += at value
+    return total
+
+def main() -> void:
+    mut count = 0
+    increment(mut ref count)
+    increment(mut ref count)
+    print(count)
+
+    numbers: list[i32] = [1, 2, 3, 4]
+    print(sum(ref numbers))

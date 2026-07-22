@@ -1,0 +1,15 @@
+// Closures and iteration.
+
+def main() -> void:
+    double = fn(x: i32) -> i32:
+        x * 2
+
+    adder = fn(a: i32, b: i32) -> i32:
+        total = a + b
+        total
+
+    numbers = [1, 2, 3, 4, 5]
+    for n in numbers:
+        print(double(n))
+
+    print(adder(10, 32))

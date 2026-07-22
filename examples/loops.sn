@@ -1,0 +1,21 @@
+// Loops that produce values, labeled breaks, and `break ... with`.
+
+def first_positive_even() -> i32:
+    mut n = 0
+    return loop:
+        n += 1
+        if n % 2 == 0:
+            break n
+
+def find_pair(target: i32) -> i32:
+    return loop as search:
+        for a in 0..5:
+            for b in 0..5:
+                if a + b == target:
+                    break search with a * 10 + b
+        break -1
+
+def main() -> void:
+    print(first_positive_even())
+    print(find_pair(6))
+    print(find_pair(99))

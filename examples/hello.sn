@@ -1,0 +1,4 @@
+// The canonical first program.
+
+def main() -> void:
+    print("Hello from TinyS")

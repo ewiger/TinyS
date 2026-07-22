@@ -1,0 +1,15 @@
+// FizzBuzz: ranges, integer arithmetic, and owned-string returns.
+
+def fizzbuzz(n: i32) -> str:
+    if n % 15 == 0:
+        return "FizzBuzz"
+    elif n % 3 == 0:
+        return "Fizz"
+    elif n % 5 == 0:
+        return "Buzz"
+    else:
+        return format("{}", n)
+
+def main() -> void:
+    for i in 1..=15:
+        print(fizzbuzz(i))

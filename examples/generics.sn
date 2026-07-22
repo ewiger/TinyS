@@ -1,0 +1,16 @@
+// Generic functions and trait bounds.
+
+def identity[T](value: T) -> T:
+    return value
+
+def max_of[T: PartialOrd](left: T, right: T) -> T:
+    if left >= right:
+        return left
+
+    return right
+
+def main() -> void:
+    print(identity(42))
+    print(identity(true))
+    print(max_of(3, 9))
+    print(max_of(2.5, 1.5))

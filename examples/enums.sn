@@ -1,0 +1,36 @@
+// Algebraic data types and exhaustive, expression-oriented matching.
+
+enum Shape:
+    Circle(f64)
+    Rectangle(f64, f64)
+    Empty
+
+def area(shape: Shape) -> f64:
+    return match shape:
+        case Shape.Circle(r):
+            3.14159 * r * r
+
+        case Shape.Rectangle(width, height):
+            width * height
+
+        case Shape.Empty:
+            0.0
+
+def describe(shape: ref Shape) -> str:
+    return match shape:
+        case Shape.Circle(_):
+            "circle"
+
+        case Shape.Rectangle(_, _):
+            "rectangle"
+
+        case Shape.Empty:
+            "nothing"
+
+def main() -> void:
+    shapes = [Shape.Circle(2.0), Shape.Rectangle(3.0, 4.0), Shape.Empty]
+    for shape in ref shapes:
+        print(describe(shape))
+
+    for shape in shapes:
+        print(area(shape))

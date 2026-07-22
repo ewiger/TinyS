@@ -18,11 +18,27 @@ def maximum(left: i32, right: i32) -> i32:
 
 ## Project status
 
-TinyS is currently an experimental language design and compiler project.
+TinyS is an experimental language design and compiler project.
 
-The syntax and semantics are still evolving. The immediate goal is to define a coherent core language and implement a source-to-source compiler that generates readable Rust code.
+A working **v0.1.0 compiler** now lives in [src/](src/): an indentation-aware
+lexer, recursive-descent parser, and Rust source generator, driven by a `tinys`
+CLI. It covers the Phase 1 core plus a good slice of Phase 2 — functions,
+ownership/borrowing (`ref`/`mut ref`/`at`/`move`/`clone`), structs, enums,
+exhaustive `match`, traits and `impl`, generics, closures, `Result`/`Option`
+with `?`, expression-oriented `if`/`match`/`loop`, and Rust interop through the
+`rust`/`macro` import roots. Runnable programs live in [examples/](examples/).
 
-TinyS is not yet ready for production use.
+```bash
+cargo build                                # build the tinys compiler
+cargo run -- run    examples/fizzbuzz.sn   # transpile → rustc → run
+cargo run -- emit-rust examples/hello.sn   # inspect the generated Rust
+cargo test                                 # lexer, codegen, and end-to-end tests
+```
+
+The syntax and semantics are still evolving, and TinyS is not yet ready for
+production use. The compiler currently shells out to `rustc` for single-file
+programs; Cargo-backed builds with `tinys.toml` dependency resolution are on the
+roadmap (so the `serde`-based interop example is emit-only for now).
 
 ## Design goals
 
@@ -958,20 +974,19 @@ Module documentation may use:
 
 Using `//` avoids ambiguity with Rust-style attributes beginning with `#`.
 
-## Planned command-line interface
-
-The command names are provisional.
+## Command-line interface
 
 ```text
-tinys build
-tinys run
-tinys check
-tinys test
-tinys fmt
-tinys emit-rust
+tinys build     <file.sn>   implemented — generate Rust and compile a binary
+tinys run       <file.sn>   implemented — build and run an application
+tinys check     <file.sn>   implemented — parse and rustc type-check
+tinys emit-rust <file.sn>   implemented — expose generated Rust for inspection
+tinys version               implemented — print the compiler version
+tinys test                  planned     — run tests through Cargo
+tinys fmt                   planned     — format `.sn` source files
 ```
 
-Expected responsibilities:
+Responsibilities:
 
 * `build` — generate Rust and compile the package;
 * `run` — build and run an application;

@@ -1,0 +1,33 @@
+// Rust interop showcase (inspect with `tinys emit-rust examples/json_user.sn`).
+//
+// This mirrors the README's flagship example. It is *emit-only*: compiling it
+// needs the `serde`/`serde_json` crates, which the single-file `tinys build`
+// path does not yet wire up (Cargo-backed builds are on the roadmap).
+
+from macro import debug, format
+import rust.serde_json as json
+
+#[derive(Debug)]
+struct User:
+    id: u64
+    name: str
+    active: bool
+
+def parse_user(source: ref str) -> Result[User, json.Error]:
+    return json.from_str[User](source)
+
+def describe(user: ref User) -> str:
+    return if user.active:
+        format("{} is active", user.name)
+    else:
+        format("{} is inactive", user.name)
+
+def main() -> Result[void, json.Error]:
+    source = r#"{"id":1,"name":"Ada","active":true}"#
+
+    user = parse_user(source)?
+
+    debug(ref user)
+    print(describe(ref user))
+
+    return Ok()

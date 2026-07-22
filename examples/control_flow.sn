@@ -1,0 +1,24 @@
+// if / elif / else, ranges, while, and mutable accumulation.
+
+def classify(n: i32) -> str:
+    if n > 0:
+        return "positive"
+    elif n < 0:
+        return "negative"
+    else:
+        return "zero"
+
+def main() -> void:
+    mut total = 0
+    for i in 0..=5:
+        total += i
+    print(total)
+
+    mut count = 3
+    while count > 0:
+        print(count)
+        count -= 1
+
+    print(classify(-4))
+    print(classify(0))
+    print(classify(7))

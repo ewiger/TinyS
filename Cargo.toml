@@ -1,0 +1,17 @@
+[package]
+name = "tinys"
+version = "0.1.0"
+edition = "2021"
+description = "TinyS — a Python-shaped, Rust-semantics language that transpiles .sn source to Rust"
+license = "MIT OR Apache-2.0"
+
+[[bin]]
+name = "tinys"
+path = "src/main.rs"
+
+[lib]
+name = "tinys"
+path = "src/lib.rs"
+
+[profile.release]
+opt-level = 2
