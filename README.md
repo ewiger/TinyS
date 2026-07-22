@@ -8,6 +8,10 @@ TinyS is a small statically typed programming language with Python-shaped syntax
 
 TinyS aims to make systems programming more readable without weakening the ownership, borrowing, type-safety, and interoperability guarantees that make Rust valuable.
 
+> 📖 **[Read the TinyS language manual →](https://ewiger.github.io/TinyS/)**
+> — the complete language reference, tutorial, syntax guide, and examples,
+> published as a static site on GitHub Pages. Source lives in [doc/public/](doc/public/).
+
 ```tinys
 def maximum(left: i32, right: i32) -> i32:
     if left >= right:
