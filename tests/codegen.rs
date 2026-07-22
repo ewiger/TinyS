@@ -276,6 +276,76 @@ fn macros() {
 }
 
 #[test]
+fn macro_imports_emit_no_use_lines() {
+    let src = "from macro import assert, debug, format\nfrom macro.std import vec\n\ndef f(x: i32) -> void:\n    debug(x)\n";
+    let out = gen(src);
+    assert!(
+        !out.contains("use macro"),
+        "the `macro` root is routing only, never a Rust path:\n{out}"
+    );
+    assert!(!out.contains("use std::vec"), "std macros need no import:\n{out}");
+}
+
+#[test]
+fn macro_imports_from_the_std_root_stay_unqualified() {
+    assert_has(
+        "from macro.std import vec\n\ndef f() -> void:\n    v = vec(1, 2)\n",
+        "vec![1, 2]",
+    );
+    assert_has(
+        "from macro import assert_eq\n\ndef f(x: i32) -> void:\n    assert_eq(x, 1)\n",
+        "assert_eq!(x, 1)",
+    );
+    // `print` is a macro too, so importing it explicitly must not change it into
+    // a function call.
+    assert_has(
+        "from macro import print, eprint\n\ndef f() -> void:\n    print(\"hi\")\n    eprint(\"oops\")\n",
+        "println!(\"hi\")",
+    );
+    assert_has(
+        "from macro import print, eprint\n\ndef f() -> void:\n    print(\"hi\")\n    eprint(\"oops\")\n",
+        "eprintln!(\"oops\")",
+    );
+}
+
+#[test]
+fn macro_imports_are_aliasable() {
+    // The alias becomes the call-site name; the Rust macro behind it is unchanged.
+    assert_has(
+        "from macro import assert as require\n\ndef f(x: i32) -> void:\n    require(x > 0)\n",
+        "assert!(x > 0)",
+    );
+    assert_has(
+        "from macro import debug as inspect\n\ndef f(x: i32) -> void:\n    inspect(x)\n",
+        "dbg!(x)",
+    );
+}
+
+#[test]
+fn crate_macro_imports_are_path_qualified() {
+    // `macro.<crate>` is a crate namespace, so the call site must name the crate —
+    // a bare `json!(...)` would not resolve in the generated Rust.
+    assert_has(
+        "from macro.serde_json import json\n\ndef f() -> void:\n    v = json(1)\n",
+        "serde_json::json!(1)",
+    );
+    assert_has(
+        "from macro.regex import regex\n\ndef f() -> void:\n    r = regex(\"a+\")\n",
+        "regex::regex!(\"a+\")",
+    );
+    assert_has(
+        "from macro.serde_json import json as j\n\ndef f() -> void:\n    v = j(1)\n",
+        "serde_json::json!(1)",
+    );
+}
+
+#[test]
+fn imported_macro_names_do_not_become_function_calls() {
+    let out = gen("from macro import panic\n\ndef f() -> void:\n    panic(\"boom\")\n");
+    assert!(out.contains("panic!("), "expected a macro invocation:\n{out}");
+}
+
+#[test]
 fn attributes_and_visibility() {
     assert_has(
         "#[derive(Debug, Clone)]\nstruct User:\n    id: u64\n",

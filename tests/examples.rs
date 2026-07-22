@@ -29,6 +29,7 @@ const RUNNABLE: &[&str] = &[
     "fizzbuzz",
     "generics",
     "loops",
+    "macros",
 ];
 
 #[test]
@@ -114,6 +115,17 @@ fn references_output() {
     let out = run_example("references");
     let lines: Vec<&str> = out.lines().collect();
     assert_eq!(lines, vec!["2", "10"]);
+}
+
+#[test]
+fn macros_output() {
+    if !rustc_available() {
+        return;
+    }
+    // `debug` writes to stderr, so only the two `print` calls reach stdout.
+    let out = run_example("macros");
+    let lines: Vec<&str> = out.lines().collect();
+    assert_eq!(lines, vec!["3", "#7 ada"]);
 }
 
 #[test]

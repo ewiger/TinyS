@@ -1,0 +1,32 @@
+// Macro imports: the `macro` root, std macros, and local aliases.
+//
+// Macros are called without the trailing `!` — including `print`, which is
+// Rust's `println!`. The prelude keeps these callable without an import, so
+// every line below would still compile with the imports removed; naming them
+// explicitly is what lets you rename them and reach crate macros.
+
+from macro import print, assert, assert_eq, debug, format
+from macro.std import vec
+from macro import assert as require
+
+#[derive(Debug, Clone)]
+struct User:
+    id: u64
+    name: str
+
+def label(user: ref User) -> str:
+    return format("#{} {}", user.id, user.name)
+
+def main() -> void:
+    values = vec(3, 1, 2)
+    assert_eq(values.len(), 3)
+    print(values.len())
+
+    user = User(id=7, name="ada")
+    require(user.id > 0)
+    assert(user.name.len() == 3, "name must be three characters")
+
+    print(label(ref user))
+
+    // `debug` is Rust's `dbg!`: it reports on stderr, so it stays out of stdout.
+    debug(ref values)

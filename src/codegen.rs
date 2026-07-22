@@ -83,13 +83,24 @@ impl Codegen {
 
     fn scan_use(&mut self, u: &Use) {
         if u.is_macro {
+            // `from macro import ...` and `from macro.std import ...` name prelude
+            // and std macros, which are callable unqualified. Any other root is a
+            // crate namespace (`from macro.serde_json import json`), so the call
+            // site is emitted path-qualified: `serde_json::json!(...)`.
+            let crate_path = match u.path.first().map(String::as_str) {
+                None | Some("std") => None,
+                Some(_) => Some(u.path.join("::")),
+            };
             for n in &u.names {
                 let callable = n.alias.clone().unwrap_or_else(|| n.name.clone());
-                let rust = self
-                    .macro_names
-                    .get(&n.name)
-                    .cloned()
-                    .unwrap_or_else(|| n.name.clone());
+                let rust = match &crate_path {
+                    Some(base) => format!("{}::{}", base, n.name),
+                    None => self
+                        .macro_names
+                        .get(&n.name)
+                        .cloned()
+                        .unwrap_or_else(|| n.name.clone()),
+                };
                 self.macro_names.insert(callable, rust);
             }
             return;

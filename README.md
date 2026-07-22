@@ -840,12 +840,32 @@ vec![1, 2, 3];
 format!("Hello {}", user.name);
 ```
 
-Aliases are supported:
+Aliases are supported; the alias becomes the call-site name:
 
 ```tinys
 from macro import debug as dbg
 from macro import assert as require
 ```
+
+`macro` and `macro.std` name the prelude and std macros, which are callable
+unqualified. Any other root is a crate namespace, and the generated call is
+qualified with it:
+
+```tinys
+from macro.serde_json import json
+from macro.regex import regex
+```
+
+```rust
+serde_json::json!(...)
+regex::regex!(...)
+```
+
+The `macro` root is routing only — it never appears in the generated Rust, and
+no `use` line is emitted for it. A small prelude (`print`, `format`, `debug`,
+`assert`, `assert_eq`, `panic`, `vec`) is in scope without an import; importing
+explicitly is what enables aliases and crate macros. See
+[examples/macros.sn](examples/macros.sn).
 
 Crate-specific macros use the macro namespace:
 

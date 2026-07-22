@@ -260,6 +260,41 @@ def main() -> void:
 
 [:octicons-file-code-16: examples/loops.sn](https://github.com/ewiger/TinyS/blob/main/examples/loops.sn) · [Guide → Control flow](../guide/control-flow.md)
 
+## Macro imports
+
+Importing macros through the `macro` root, renaming them, and calling them
+without a trailing `!` — `print` included, since it is Rust's `println!`.
+
+```python
+from macro import print, assert, assert_eq, debug, format
+from macro.std import vec
+from macro import assert as require
+
+#[derive(Debug, Clone)]
+struct User:
+    id: u64
+    name: str
+
+def label(user: ref User) -> str:
+    return format("#{} {}", user.id, user.name)
+
+def main() -> void:
+    values = vec(3, 1, 2)
+    assert_eq(values.len(), 3)
+    print(values.len())
+
+    user = User(id=7, name="ada")
+    require(user.id > 0)
+    assert(user.name.len() == 3, "name must be three characters")
+
+    print(label(ref user))
+
+    // `debug` is Rust's `dbg!`: it reports on stderr, so it stays out of stdout.
+    debug(ref values)
+```
+
+[:octicons-file-code-16: examples/macros.sn](https://github.com/ewiger/TinyS/blob/main/examples/macros.sn) · [Advanced → Macros](../advanced/macros.md)
+
 ## Rust interop (emit-only)
 
 A `serde_json` showcase. Inspect it with `tinys emit-rust examples/json_user.sn`;

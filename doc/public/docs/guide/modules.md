@@ -63,6 +63,10 @@ from macro import debug as dbg
 from macro import assert as require
 ```
 
+Roots other than `std` are crate namespaces, and the generated call carries the
+crate with it — `from macro.serde_json import json` makes `json(...)` emit
+`serde_json::json!(...)`.
+
 See [Macros](../advanced/macros.md) for the full mapping.
 
 ## Visibility

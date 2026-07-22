@@ -12,12 +12,35 @@ from macro import assert, debug, format
 from macro.std import vec
 ```
 
+`macro` and `macro.std` name the prelude and std macros, which are callable
+unqualified. The `macro` root is routing only — it never appears in the
+generated Rust, and no `use` line is emitted for it.
+
 Crate-specific macros use the crate's namespace under `macro`:
 
 ```python
 from macro.serde_json import json
 from macro.regex import regex
 ```
+
+Any root other than `std` is read as a crate namespace, so the generated call is
+path-qualified with it:
+
+```rust
+serde_json::json!(...)
+regex::regex!(...)
+```
+
+That keeps the invocation resolvable without an extra `use`, and lets two crates
+export same-named macros in one file.
+
+!!! note
+
+    A small prelude — `print`, `format`, `debug`, `assert`, `assert_eq`,
+    `panic`, `vec` — is in scope without an import, which is why
+    [`hello.sn`](../examples/index.md#hello-world) can call `print` directly.
+    Importing them explicitly is still supported, and is what makes aliases and
+    crate macros possible.
 
 ## Calling macros
 
@@ -42,9 +65,15 @@ format!("Hello {}", user.name);
 
 ## Aliases
 
+The alias becomes the call-site name; the Rust macro behind it is unchanged.
+
 ```python
 from macro import debug as dbg
 from macro import assert as require
+```
+
+```python
+require(user.id > 0)     # assert!(user.id > 0)
 ```
 
 ## Common macros at a glance
