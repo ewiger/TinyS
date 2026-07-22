@@ -21,7 +21,7 @@ tinys run hello.sn
 Hello from TinyS
 ```
 
-`tinys run` transpiles `hello.sn` to Rust, compiles it with `rustc`, and runs the
+`tinys run` transpiles `hello.sn` to Rust, compiles it with Cargo, and runs the
 resulting binary in one step.
 
 !!! tip "Running from a fresh clone"
@@ -58,11 +58,12 @@ predictable, inspectable Rust. Read more in
 | --------------------------- | ------------------------------------------------------- |
 | `tinys run hello.sn`        | Transpile → compile → run                               |
 | `tinys build hello.sn`      | Transpile → compile to a native binary (no run)         |
-| `tinys check hello.sn`      | Parse and type-check only (via `rustc`), no binary      |
+| `tinys check hello.sn`      | Parse and type-check only (via `cargo check`), no binary |
 | `tinys emit-rust hello.sn`  | Print the generated Rust                                |
 
 Generated Rust and binaries are written under `target/tinys-generated/` next to
-your source. See the full [CLI reference](../reference/cli.md).
+your source — or next to `tinys.toml` when the file belongs to a package. See the
+full [CLI reference](../reference/cli.md).
 
 ## Pass arguments to your program
 

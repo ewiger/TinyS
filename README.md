@@ -48,15 +48,15 @@ with `?`, expression-oriented `if`/`match`/`loop`, and Rust interop through the
 
 ```bash
 cargo build                                # build the tinys compiler
-cargo run -- run    examples/fizzbuzz.sn   # transpile → rustc → run
+cargo run -- run    examples/fizzbuzz.sn   # transpile → cargo → run
 cargo run -- emit-rust examples/hello.sn   # inspect the generated Rust
 cargo test                                 # lexer, codegen, and end-to-end tests
 ```
 
 The syntax and semantics are still evolving, and TinyS is not yet ready for
-production use. The compiler currently shells out to `rustc` for single-file
-programs; Cargo-backed builds with `tinys.toml` dependency resolution are on the
-roadmap (so the `serde`-based interop example is emit-only for now).
+production use. Each `.sn` file is compiled as its own Cargo package, with
+dependencies resolved from the nearest `tinys.toml`; multi-file module discovery
+is still on the roadmap.
 
 ## Design goals
 
@@ -950,7 +950,11 @@ serde_json = "1"
 regex = "1"
 ```
 
-TinyS generates or manages the corresponding `Cargo.toml`.
+TinyS generates and manages the corresponding `Cargo.toml`: `build`, `run` and
+`check` look for the nearest `tinys.toml` above the source file, wrap the
+generated Rust in a scratch Cargo package under `target/tinys-generated/`, and
+drive `cargo`. Only the crates a program imports are carried into the generated
+manifest, so dependency-free programs still build without a network.
 
 The dependency model should remain close to Cargo so that existing Rust documentation and tooling stay useful.
 
@@ -1017,7 +1021,7 @@ Using `//` avoids ambiguity with Rust-style attributes beginning with `#`.
 ```text
 tinys build     <file.sn>   implemented — generate Rust and compile a binary
 tinys run       <file.sn>   implemented — build and run an application
-tinys check     <file.sn>   implemented — parse and rustc type-check
+tinys check     <file.sn>   implemented — parse and type-check via `cargo check`
 tinys emit-rust <file.sn>   implemented — expose generated Rust for inspection
 tinys version               implemented — print the compiler version
 tinys test                  planned     — run tests through Cargo

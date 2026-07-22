@@ -14,8 +14,8 @@ designed but still in progress.
 
 ## Runs today
 
-These features compile and run through `tinys run` / `tinys build` (pure-`std`,
-so `rustc` alone is enough). Each is backed by a runnable
+These features compile and run through `tinys run` / `tinys build`, which drive
+`cargo` over a generated package. Each is backed by a runnable
 [example](../examples/index.md):
 
 - [x] Functions, explicit types, early `return` and tail-expression returns
@@ -30,13 +30,8 @@ so `rustc` alone is enough). Each is backed by a runnable
 - [x] Closures (`fn(...)`)
 - [x] `print` / `format` / `debug` macros
 - [x] `#[derive(...)]` and other attributes passing through to Rust
-
-## Generates correct Rust (emit-only)
-
-These generate correct Rust via `tinys emit-rust`, but the single-file build path
-does not yet resolve external crates, so they do not `build`/`run` directly:
-
-- [ ] Rust-crate interop through the `rust` / `macro` roots (e.g. `serde` / `serde_json`) — see [`json_user.sn`](../examples/index.md#rust-interop-emit-only)
+- [x] Cargo-backed builds driven by `tinys.toml` (dependency resolution)
+- [x] Rust-crate interop through the `rust` / `macro` roots (e.g. `serde` / `serde_json`) — see [`json_user.sn`](../examples/index.md#rust-interop)
 
 ## Designed — in progress
 
@@ -44,7 +39,6 @@ Specified in the language reference and used throughout this manual, but not yet
 fully wired into the compiler. Verify with `tinys emit-rust` before relying on a
 specific form:
 
-- [ ] Cargo-backed builds driven by `tinys.toml` (dependency resolution)
 - [ ] Multi-file module discovery
 - [ ] `dict` / `set` literals and `array` types (beyond `list` literals)
 - [ ] Lifetime syntax coverage across all positions

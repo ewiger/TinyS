@@ -124,14 +124,21 @@ serde_json = "1"
 regex = "1"
 ```
 
-TinyS generates or manages the corresponding `Cargo.toml`.
+`build`, `run` and `check` search upward from the source file for the nearest
+`tinys.toml`, then generate the corresponding `Cargo.toml` under
+`target/tinys-generated/` and drive `cargo`. Only the crates a program actually
+imports are carried over, so a package can declare `regex` without slowing down
+programs that never import it.
 
-!!! info "Multi-file & Cargo builds are on the roadmap"
+TinyS understands `[package]` (`name`, `version`, `edition`), `[dependencies]`
+— in both the inline and `[dependencies.<name>]` forms — and passes `[profile.*]`
+and `[patch.*]` through unchanged. Other sections are ignored with a warning.
 
-    The v0.1.0 compiler builds **single files** by shelling out to `rustc`.
-    Module discovery across multiple `.sn` files and `tinys.toml`-driven Cargo
-    builds are planned — see the [roadmap](../about/roadmap.md). Until then,
-    crate-dependent programs are *emit-only* (`tinys emit-rust`).
+!!! info "Multi-file modules are on the roadmap"
+
+    The v0.1.0 compiler builds **one `.sn` file at a time**. Module discovery
+    across multiple `.sn` files is planned — see the
+    [roadmap](../about/roadmap.md).
 
 ## Where to go next
 

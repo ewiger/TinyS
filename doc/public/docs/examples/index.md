@@ -1,9 +1,10 @@
 # Examples
 
 Every program below is a real, standalone `.sn` file in the repository's
-[`examples/`](https://github.com/ewiger/TinyS/tree/main/examples) directory. The
-first ten are pure-`std` and **compile and run today** with `rustc` alone; the
-interop example is *emit-only*.
+[`examples/`](https://github.com/ewiger/TinyS/tree/main/examples) directory. All
+of them **compile and run today**; the first ten are pure-`std`, and the interop
+example pulls its crates from
+[`examples/tinys.toml`](https://github.com/ewiger/TinyS/blob/main/examples/tinys.toml).
 
 Run any of them:
 
@@ -295,16 +296,17 @@ def main() -> void:
 
 [:octicons-file-code-16: examples/macros.sn](https://github.com/ewiger/TinyS/blob/main/examples/macros.sn) · [Advanced → Macros](../advanced/macros.md)
 
-## Rust interop (emit-only)
+## Rust interop
 
-A `serde_json` showcase. Inspect it with `tinys emit-rust examples/json_user.sn`;
-building it needs Cargo-managed crates.
+A `serde_json` showcase. It builds and runs like the others —
+`examples/tinys.toml` declares the `serde` and `serde_json` crates it imports.
 
 ```python
 from macro import debug, format
+from rust.serde import Deserialize
 import rust.serde_json as json
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct User:
     id: u64
     name: str

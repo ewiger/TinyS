@@ -55,9 +55,10 @@ This mirrors the flagship example in the repository
 
 ```python
 from macro import debug, format
+from rust.serde import Deserialize
 import rust.serde_json as json
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct User:
     id: u64
     name: str
@@ -80,6 +81,13 @@ def main() -> Result[void, json.Error]:
     return Ok()
 ```
 
+The crates it imports are declared in `examples/tinys.toml`, so it builds and
+runs like any other example:
+
+```bash
+tinys run examples/json_user.sn
+```
+
 Inspect the generated Rust:
 
 ```bash
@@ -87,9 +95,10 @@ tinys emit-rust examples/json_user.sn
 ```
 
 ```rust
+use serde::Deserialize;
 use serde_json;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct User {
     id: u64,
     name: String,
@@ -102,14 +111,12 @@ fn parse_user(source: &str) -> Result<User, serde_json::Error> {
 // ...
 ```
 
-!!! warning "Interop is emit-only in v0.1.0"
+!!! info "Crates come from `tinys.toml`"
 
-    Programs that depend on external crates generate correct Rust, but the
-    single-file `tinys build` path shells out to `rustc` and does **not** yet
-    resolve crate dependencies. Cargo-backed builds driven by `tinys.toml` are on
-    the [roadmap](../about/roadmap.md); until then, use `tinys emit-rust` and
-    build the output in a Cargo project. Pure-std programs
-    ([the runnable examples](../examples/index.md)) build and run directly.
+    `build`, `run` and `check` resolve dependencies through the nearest
+    `tinys.toml` above the source file — see
+    [Dependencies](../guide/modules.md#dependencies). A crate that is imported
+    but not declared there fails with Cargo's usual `unresolved import` error.
 
 ## Where the boundary sits
 

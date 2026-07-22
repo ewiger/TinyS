@@ -70,8 +70,9 @@ You should not have to debug generated `.rs` files by hand.
 !!! info "Diagnostic remapping is maturing"
 
     Source-mapped diagnostics are a Phase 2 goal. In the current compiler, if
-    `rustc` rejects the generated Rust, `tinys` points you at `emit-rust` so you
-    can inspect the output directly. See [Language status](../about/status.md).
+    `rustc` rejects the generated Rust, the errors point into the generated
+    `src/main.rs`, and `tinys` prints its full path so you can open it. See
+    [Language status](../about/status.md).
 
 ## The pipeline
 

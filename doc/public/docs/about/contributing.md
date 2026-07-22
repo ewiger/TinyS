@@ -29,7 +29,8 @@ cargo run -- run examples/hello.sn
 ```
 
 The end-to-end tests drive the `tinys` binary to compile the `.sn` examples with
-`rustc`; they are skipped automatically when `rustc` is unavailable.
+Cargo; they are skipped automatically when `cargo` is unavailable. The interop
+example also needs crates.io reachable, and is skipped when it is not.
 
 ## Working on these docs
 

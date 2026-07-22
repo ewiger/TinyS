@@ -41,7 +41,7 @@ TinyS is **Python's look with Rust's guarantees**:
   transfer with `move`. There is no garbage collector.
 - **Errors are values** — `Result` / `Option` and the `?` operator, never
   exceptions, never `null`.
-- **Everything compiles to Rust** — and then to a native binary via `rustc`.
+- **Everything compiles to Rust** — and then to a native binary via Cargo.
 
 If you already know a little Rust, TinyS will feel like Rust wearing Python's
 clothes. If you know Python, you get a readable on-ramp to Rust's ownership

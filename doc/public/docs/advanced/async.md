@@ -47,9 +47,9 @@ async fn fetch_user(id: u64) -> Result<User, Error> {
 
 !!! info "Designed feature"
 
-    Async is part of the Phase 2 language design. Because it depends on async
-    runtime crates (e.g. `tokio`), it also depends on the planned Cargo-backed
-    build path. See the [roadmap](../about/roadmap.md) and
+    Async is part of the Phase 2 language design. Runtime crates such as `tokio`
+    can already be declared in `tinys.toml`, but `async def` / `.await` are not
+    yet wired through the compiler. See the [roadmap](../about/roadmap.md) and
     [Language status](../about/status.md).
 
 ## Where to go next

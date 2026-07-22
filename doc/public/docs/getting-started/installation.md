@@ -1,11 +1,11 @@
 # Installation
 
-TinyS transpiles to Rust and then shells out to `rustc`, so you need the Rust
+TinyS transpiles to Rust and then builds it with Cargo, so you need the Rust
 toolchain installed, plus the TinyS compiler itself (built from source).
 
 ## Prerequisites
 
-TinyS generates Rust and compiles it with `rustc`, so a working Rust toolchain
+TinyS generates Rust and compiles it with `cargo`, so a working Rust toolchain
 must be on your `PATH`.
 
 === "macOS / Linux"
@@ -26,9 +26,9 @@ rustc --version
 cargo --version
 ```
 
-!!! warning "`rustc` is required at compile time"
+!!! warning "`cargo` is required at compile time"
 
-    If `rustc` is not found on your `PATH`, `tinys build`, `tinys run`, and
+    If `cargo` is not found on your `PATH`, `tinys build`, `tinys run`, and
     `tinys check` will fail with a clear error. Only `tinys emit-rust` (which
     just prints generated Rust) works without it.
 
@@ -70,7 +70,7 @@ Run the bundled examples' test suite — it drives the `tinys` binary end to end
 cargo test
 ```
 
-The end-to-end tests are skipped automatically when `rustc` is unavailable, so a
+The end-to-end tests are skipped automatically when `cargo` is unavailable, so a
 green run confirms both halves of the toolchain are wired up.
 
 ## What's next

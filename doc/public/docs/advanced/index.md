@@ -17,6 +17,6 @@ reason about the generated output.
 !!! info "Maturity varies by topic"
 
     Several features on these pages are **designed** (specified in the language
-    reference) but not yet fully wired into the v0.1.0 compiler — lifetimes,
-    async, and Cargo-backed interop in particular. Each page flags its status, and
+    reference) but not yet fully wired into the v0.1.0 compiler — lifetimes and
+    async in particular. Each page flags its status, and
     [Language status](../about/status.md) is the authoritative summary.

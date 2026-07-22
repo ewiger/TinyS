@@ -1,13 +1,14 @@
-// Rust interop showcase (inspect with `tinys emit-rust examples/json_user.sn`).
+// Rust interop showcase: `tinys run examples/json_user.sn`.
 //
-// This mirrors the README's flagship example. It is *emit-only*: compiling it
-// needs the `serde`/`serde_json` crates, which the single-file `tinys build`
-// path does not yet wire up (Cargo-backed builds are on the roadmap).
+// This mirrors the README's flagship example. It depends on the `serde` and
+// `serde_json` crates, which are declared in `examples/tinys.toml` and resolved
+// by the Cargo-backed build.
 
 from macro import debug, format
+from rust.serde import Deserialize
 import rust.serde_json as json
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 struct User:
     id: u64
     name: str

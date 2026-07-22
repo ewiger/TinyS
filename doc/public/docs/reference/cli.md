@@ -1,10 +1,10 @@
 # CLI commands
 
 The `tinys` binary drives the whole pipeline: `.sn` source → generated Rust →
-`rustc` → native binary.
+Cargo → native binary.
 
 ```text
-tinys <command> <file.sn> [-- <program args>]
+tinys <command> <file.sn> [--release] [-- <program args>]
 ```
 
 ## Commands
@@ -13,7 +13,7 @@ tinys <command> <file.sn> [-- <program args>]
 | --------------------------- | ----------- | ------------------------------------------------- |
 | `tinys build <file.sn>`     | implemented | Generate Rust and compile a native binary         |
 | `tinys run <file.sn>`       | implemented | Build and run an application                      |
-| `tinys check <file.sn>`     | implemented | Parse and `rustc` type-check (no binary)          |
+| `tinys check <file.sn>`     | implemented | Parse and type-check via `cargo check` (no binary) |
 | `tinys emit-rust <file.sn>` | implemented | Print the generated Rust for inspection           |
 | `tinys version`             | implemented | Print the compiler version                        |
 | `tinys help`                | implemented | Show usage                                        |
@@ -29,9 +29,10 @@ tinys <command> <file.sn> [-- <program args>]
 tinys build examples/hello.sn
 ```
 
-Generates Rust into `target/tinys-generated/`, compiles it with `rustc`
-(`--edition 2021`), and writes the binary next to the generated source. Prints the
-resulting binary path on success.
+Generates Rust into `target/tinys-generated/`, wraps it in a Cargo package whose
+dependencies come from [`tinys.toml`](../guide/modules.md#dependencies), and runs
+`cargo build`. Prints the resulting binary path on success. Pass `--release` to
+build with Cargo's release profile.
 
 ## `run`
 
@@ -52,8 +53,8 @@ tinys run examples/hello.sn -- --name Ada
 tinys check examples/structs.sn
 ```
 
-Parses the `.sn` file and type-checks the generated Rust with `rustc` (emitting
-metadata only — no binary). Reports `ok: … parses and type-checks` on success.
+Parses the `.sn` file and type-checks the generated Rust with `cargo check` — no
+binary is produced. Reports `ok: … parses and type-checks` on success.
 
 ## `emit-rust`
 
@@ -61,26 +62,33 @@ metadata only — no binary). Reports `ok: … parses and type-checks` on succes
 tinys emit-rust examples/json_user.sn
 ```
 
-Prints the generated Rust to standard output without invoking `rustc`. This is the
-only command that works without a Rust toolchain installed, and the way to inspect
-*emit-only* interop programs. See
+Prints the generated Rust to standard output without invoking Cargo. This is the
+only command that works without a Rust toolchain installed. See
 [Reading the generated Rust](../advanced/generated-rust.md).
 
 ## Output layout
 
-Generated Rust and compiled binaries are written under a `target/tinys-generated/`
-directory next to your source file:
+Each `.sn` file becomes its own Cargo package under `target/tinys-generated/`,
+written next to `tinys.toml` if there is one, and otherwise next to the source
+file:
 
 ```text
 target/
 └── tinys-generated/
-    ├── hello.rs      # generated Rust
-    └── hello         # compiled binary
+    ├── hello/
+    │   ├── Cargo.toml      # generated from tinys.toml
+    │   └── src/main.rs     # generated Rust
+    └── cargo-target/       # Cargo's build directory, shared by the package
+        └── debug/hello     # compiled binary
 ```
+
+Only the crates a program imports are copied into the generated `Cargo.toml`, so
+a `tinys.toml` that declares `serde` costs nothing for programs that do not use
+it.
 
 ## Requirements
 
-`build`, `run`, and `check` require `rustc` on your `PATH`. If it is missing,
+`build`, `run`, and `check` require `cargo` on your `PATH`. If it is missing,
 `tinys` prints a clear error pointing at <https://rustup.rs>. See
 [Installation](../getting-started/installation.md).
 

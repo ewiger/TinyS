@@ -84,11 +84,11 @@ def main() -> Result[void, json.Error]:
     return Ok()
 ```
 
-!!! note "Interop example is emit-only today"
+!!! note "Crates come from `tinys.toml`"
 
-    This `serde_json` example generates correct Rust (`tinys emit-rust`), but
-    building it needs Cargo-managed crates, which the single-file build path does
-    not wire up yet. See [Rust interoperability](../advanced/interop.md) and
+    This `serde_json` example builds and runs like any other, provided `serde_json`
+    is declared in the package's `tinys.toml`. See
+    [Rust interoperability](../advanced/interop.md) and
     [Language status](../about/status.md).
 
 ## Generated Rust

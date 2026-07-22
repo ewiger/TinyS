@@ -18,15 +18,21 @@ into their own files as they are picked up.
 
 ## Toolchain & build
 
-### L-01 — No Cargo / `tinys.toml` integration; builds are single-file `rustc`
-`tinys build`/`run` write one generated `.rs` into `target/tinys-generated/` and
-invoke `rustc` directly (`src/main.rs::build`). There is no dependency
-resolution, so any program importing an external crate cannot be compiled.
+### L-01 — Cargo / `tinys.toml` integration — **resolved**
+`tinys build`/`run`/`check` now generate a scratch Cargo package per `.sn` file
+(`src/main.rs::Project`) from the nearest `tinys.toml` (`src/manifest.rs`) and
+drive `cargo`. [examples/json_user.sn](../../../examples/json_user.sn) builds and
+runs against `serde`/`serde_json`.
 
-- **Impact:** [examples/json_user.sn](../../../examples/json_user.sn) (serde) is
-  **emit-only** — `emit-rust` works, `build`/`run` do not.
-- **Toward a fix:** parse `tinys.toml`, generate a `Cargo.toml` + `src/main.rs`,
-  and shell out to `cargo build` instead of `rustc`.
+Remaining rough edges:
+
+- only `[package]` (`name`, `version`, `edition`), `[dependencies]`,
+  `[profile.*]` and `[patch.*]` are understood; other sections warn and are
+  dropped (notably `[dev-dependencies]`, pending `tinys test`);
+- a dependency reaches the generated `Cargo.toml` only if its crate identifier
+  appears in the generated Rust, which is a textual test, not resolution;
+- one Cargo package per file: there is no shared library target between the
+  programs in a package (see L-02).
 
 ### L-02 — No multi-file modules / module discovery
 Native imports (`from models import User`, `import services.database as db`)
@@ -38,7 +44,7 @@ files. Single-file builds have no such modules, so these programs are emit-only.
 
 ### L-03 — Missing CLI subcommands
 `tinys fmt` and `tinys test` are documented but not implemented. `check` runs
-`rustc --emit=metadata`; it does not yet do TinyS-level semantic checks.
+`cargo check`; it does not yet do TinyS-level semantic checks.
 
 ---
 
@@ -50,9 +56,9 @@ and borrow errors come straight from `rustc`**, pointing into the generated
 `target/tinys-generated/*.rs`, not the original `.sn`. The design's diagnostic
 remapping (README "Compiler diagnostics") is not implemented.
 
-- **Impact:** a type error currently reads like
-  `--> examples/target/tinys-generated/foo.rs:29:5`, and the CLI only hints
-  "inspect it with `tinys emit-rust …`".
+- **Impact:** a type error currently reads like `--> src/main.rs:29:5`, relative
+  to the generated Cargo package; the CLI prints that package's absolute path
+  underneath so the file can at least be found.
 - **Toward a fix:** emit `#[line]`-style source maps or track spans through
   codegen and rewrite `rustc --error-format=json` output.
 

@@ -7,12 +7,14 @@
 //! .sn source → lexer → parser → AST → Rust code generator → generated .rs
 //! ```
 //!
-//! The generated Rust is then handed to `rustc`/Cargo by the `tinys` CLI.
+//! The generated Rust is then handed to Cargo by the `tinys` CLI, which wraps it
+//! in a scratch Cargo package whose dependencies come from `tinys.toml`.
 
 pub mod ast;
 pub mod codegen;
 pub mod diagnostics;
 pub mod lexer;
+pub mod manifest;
 pub mod parser;
 
 pub use diagnostics::TinysError;
