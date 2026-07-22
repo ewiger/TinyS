@@ -1,0 +1,18 @@
+// The crate root: `tinys run examples/modules/src/app.sn`.
+//
+// `main.sn` is not required — the file you build becomes the crate root, and
+// every *other* `.sn` file under `src/` becomes a module. Nothing here declares
+// those modules; the compiler derives them from the file tree.
+
+from macro import assert, format
+from models import User
+from services import describe
+import services.store as store
+
+def main() -> void:
+    users = store.seed()
+
+    for user in ref users:
+        print(describe(user))
+
+    print(format("{} of {} are active", store.visible(ref users), users.len()))

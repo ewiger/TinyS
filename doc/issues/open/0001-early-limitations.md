@@ -34,13 +34,21 @@ Remaining rough edges:
 - one Cargo package per file: there is no shared library target between the
   programs in a package (see L-02).
 
-### L-02 — No multi-file modules / module discovery
-Native imports (`from models import User`, `import services.database as db`)
-generate `use crate::…` (`src/codegen.rs::gen_use`) but nothing resolves them to
-files. Single-file builds have no such modules, so these programs are emit-only.
+### L-02 — Multi-file modules / module discovery — **resolved**
+`src/*.sn` now maps to the crate's module tree (`src/modules.rs`). The compiler
+walks `src/`, derives modules from files, and writes the `mod` declarations
+itself — TinyS has no `mod` keyword. `*_test.sn` files are declared
+`#[cfg(test)]`, and `[package] exclude` keeps files out of the tree. See
+[examples/modules/](../../../examples/modules/).
 
-- **Toward a fix:** implement the `src/*.sn` → `mod` mapping from the README's
-  "Proposed project layout".
+Remaining rough edges:
+
+- one entry point per build: each `.sn` file generates its own Cargo package
+  with a `main.rs`. Library targets (`lib.rs`), `export`/`pub use` re-exports and
+  multiple declared binaries are not implemented;
+- imports are absolute from the crate root only — no `from . import x`;
+- a module's `pub` items are visible crate-wide because synthesized declarations
+  are always `pub mod`; `pub[crate]` on items is the only narrowing available.
 
 ### L-03 — Missing CLI subcommands
 `tinys fmt` and `tinys test` are documented but not implemented. `check` runs

@@ -6,12 +6,29 @@ All notable changes to TinyS are recorded here. The format follows
 
 ## [Unreleased]
 
-Cargo-backed builds. `tinys` no longer shells out to `rustc` for a single file;
-every `.sn` program is compiled as a real Cargo package, so programs can depend
-on crates from [crates.io](https://crates.io).
+Cargo-backed builds and multi-file packages. `tinys` no longer shells out to
+`rustc` for a single file; every `.sn` program is compiled as a real Cargo
+package, so programs can depend on crates from [crates.io](https://crates.io)
+and can be split across files.
 
 ### Added
 
+- **Multi-file modules, with no `mod` keyword** (`src/modules.rs`). The compiler
+  walks `src/`, derives the module tree from the file tree, and writes Rust's
+  `mod` declarations itself — a file is a module because it exists. `src/` is the
+  switch: a package without one is a directory of independent single-file
+  programs. The file you build is the crate root and is never also a module, so
+  `main.sn` is not required. A directory is a module whose own source is
+  `mod.sn`; one without `mod.sn` still exists to hold its children. Imports stay
+  absolute from the crate root.
+- **Colocated tests through the `_test.sn` suffix.** Such a file is declared
+  `#[cfg(test)]`, giving Rust's colocated `mod tests` without a keyword. `tinys
+  check` now passes `--all-targets` so these are type-checked too.
+- **`[package] exclude`** in `tinys.toml`, keeping files out of the module tree.
+  `*` matches within one path segment; naming a directory excludes everything
+  under it.
+- **`examples/modules/`**, a multi-file package exercising directory modules,
+  a `_test.sn` module, and `exclude` (with a deliberately broken file inside it).
 - **Cargo-backed builds.** `build`, `run` and `check` generate a Cargo package
   per `.sn` file under `target/tinys-generated/` and drive `cargo`.
 - **`tinys.toml` manifests** (`src/manifest.rs`), discovered by walking up from
@@ -48,8 +65,14 @@ on crates from [crates.io](https://crates.io).
   `tinys run` no longer triggers a Cargo rebuild.
 - A failing build reports the absolute path of the generated `src/main.rs` that
   Cargo's errors refer to.
-- Documentation throughout the manual, the README, and `doc/issues/` no longer
-  describes crate interop as emit-only or Cargo builds as planned.
+- `tinys emit-rust` labels each generated file when a program spans more than
+  one; single-file output is unchanged.
+- Generated `.rs` files left behind by a renamed or deleted module are pruned, so
+  a stale `foo.rs` can never collide with a new `foo/mod.rs`.
+- Documentation throughout the manual, the README, `doc/draft/syntax-general.md`
+  and `doc/issues/` no longer describes crate interop as emit-only, Cargo builds
+  as planned, or `mod` as an open design question — §22 of the draft now records
+  the decision that TinyS has no `mod` keyword, not even as an optional form.
 
 ### Fixed
 
@@ -61,8 +84,12 @@ on crates from [crates.io](https://crates.io).
 - Dependency pruning is a textual identifier match against the generated Rust,
   not name resolution.
 - `[dev-dependencies]` and other manifest sections are dropped with a warning.
-- Multi-file module discovery is still unimplemented: one `.sn` file in, one
-  binary out. See `doc/issues/open/0001-early-limitations.md`.
+- One entry point per build: each `.sn` file becomes its own Cargo package with
+  a `main.rs`. Library targets (`lib.rs`), `export`/`pub use` re-exports and
+  multiple declared binaries are not implemented.
+- Imports are absolute from the crate root; there is no `from . import x`.
+- Synthesized declarations are always `pub mod`, so a module's `pub` items are
+  visible crate-wide. See `doc/issues/open/0001-early-limitations.md`.
 - `rustc` type and borrow errors still point into the generated Rust rather than
   the `.sn` source.
 

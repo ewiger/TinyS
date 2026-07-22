@@ -23,6 +23,7 @@ compiles-today status, see [Language status](status.md).
 - closures;
 - module discovery;
 - public APIs and re-exports;
+
 - async functions;
 - source-mapped compiler diagnostics;
 - formatter and test runner.

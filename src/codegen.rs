@@ -8,10 +8,26 @@
 use crate::ast::*;
 use std::collections::{HashMap, HashSet};
 
+/// A `mod` declaration synthesized from the file tree.
+///
+/// TinyS has no `mod` keyword: submodules are derived from the `.sn` files next
+/// to their parent, and the compiler writes these declarations itself.
+#[derive(Debug, Clone)]
+pub struct ChildModule {
+    pub name: String,
+    /// Declared `#[cfg(test)]`, from a `_test.sn` file.
+    pub cfg_test: bool,
+}
+
 pub fn generate(program: &Program) -> String {
+    generate_module(program, &[])
+}
+
+/// Generate a module that declares `children` as submodules.
+pub fn generate_module(program: &Program, children: &[ChildModule]) -> String {
     let mut cg = Codegen::new();
     cg.prescan(program);
-    cg.emit_program(program)
+    cg.emit_program(program, children)
 }
 
 struct Sig {
@@ -105,7 +121,11 @@ impl Codegen {
             }
             return;
         }
-        let prefix = if u.is_rust { String::new() } else { "crate::".to_string() };
+        let prefix = if u.is_rust {
+            String::new()
+        } else {
+            "crate::".to_string()
+        };
         if let Some(alias) = &u.alias {
             let full = format!("{}{}", prefix, u.path.join("::"));
             self.module_alias.insert(alias.clone(), full);
@@ -136,7 +156,7 @@ impl Codegen {
 
     // ---- program & items ------------------------------------------------------
 
-    fn emit_program(&mut self, program: &Program) -> String {
+    fn emit_program(&mut self, program: &Program, children: &[ChildModule]) -> String {
         let mut use_lines: Vec<String> = Vec::new();
         let mut bodies: Vec<String> = Vec::new();
 
@@ -167,6 +187,15 @@ impl Codegen {
         out.push_str(
             "#![allow(dead_code, unused_variables, unused_imports, unused_mut, unused_parens, non_snake_case, clippy::all)]\n",
         );
+        if !children.is_empty() {
+            out.push('\n');
+            for child in children {
+                if child.cfg_test {
+                    out.push_str("#[cfg(test)]\n");
+                }
+                out.push_str(&format!("pub mod {};\n", child.name));
+            }
+        }
         if !use_lines.is_empty() || !auto.is_empty() {
             out.push('\n');
             for l in &auto {
@@ -351,7 +380,11 @@ impl Codegen {
         let attrs = self.gen_attrs(&t.attrs);
         let vis = if t.is_pub { "pub " } else { "" };
         let generics = self.gen_generics(&t.generics);
-        let methods: Vec<String> = t.methods.iter().map(|m| self.gen_function(m, true)).collect();
+        let methods: Vec<String> = t
+            .methods
+            .iter()
+            .map(|m| self.gen_function(m, true))
+            .collect();
         format!(
             "{}{}trait {}{} {{\n{}\n}}",
             attrs,
@@ -365,10 +398,19 @@ impl Codegen {
     fn gen_impl(&mut self, i: &Impl) -> String {
         let generics = self.gen_generics(&i.generics);
         let head = match &i.trait_name {
-            Some(tr) => format!("impl{} {} for {}", generics, self.gen_type(tr), self.gen_type(&i.ty)),
+            Some(tr) => format!(
+                "impl{} {} for {}",
+                generics,
+                self.gen_type(tr),
+                self.gen_type(&i.ty)
+            ),
             None => format!("impl{} {}", generics, self.gen_type(&i.ty)),
         };
-        let methods: Vec<String> = i.methods.iter().map(|m| self.gen_function(m, true)).collect();
+        let methods: Vec<String> = i
+            .methods
+            .iter()
+            .map(|m| self.gen_function(m, true))
+            .collect();
         format!("{} {{\n{}\n}}", head, indent(&methods.join("\n\n"), 1))
     }
 
@@ -431,7 +473,9 @@ impl Codegen {
                 let m = if *mutable { "mut " } else { "" };
                 // `ref str`/`ref slice[T]` borrow the unsized form, not the owned one.
                 let inner_code = match &**inner {
-                    Type::Path { segments, args } if args.is_empty() && segments == &["str".to_string()] => {
+                    Type::Path { segments, args }
+                        if args.is_empty() && segments == &["str".to_string()] =>
+                    {
                         "str".to_string()
                     }
                     other => self.gen_type(other),
@@ -459,7 +503,12 @@ impl Codegen {
 
     // ---- statements & blocks --------------------------------------------------
 
-    fn gen_block(&mut self, stmts: &[Stmt], as_value: bool, tail_expected: Option<&Type>) -> String {
+    fn gen_block(
+        &mut self,
+        stmts: &[Stmt],
+        as_value: bool,
+        tail_expected: Option<&Type>,
+    ) -> String {
         let n = stmts.len();
         let mut parts: Vec<String> = Vec::new();
         for (i, s) in stmts.iter().enumerate() {
@@ -513,7 +562,12 @@ impl Codegen {
                     AssignOp::Div => "/=",
                     AssignOp::Rem => "%=",
                 };
-                format!("{} {} {};", self.gen_expr(target), ops, self.gen_expr(value))
+                format!(
+                    "{} {} {};",
+                    self.gen_expr(target),
+                    ops,
+                    self.gen_expr(value)
+                )
             }
             Stmt::Expr(e) => {
                 if is_tail {
@@ -527,7 +581,12 @@ impl Codegen {
                 let expected = self.cur_ret.clone();
                 format!("return {};", self.gen_expr_coerced(e, expected.as_ref()))
             }
-            Stmt::If(chain) => self.gen_if(&chain.arms, chain.else_body.as_deref(), is_tail, tail_expected),
+            Stmt::If(chain) => self.gen_if(
+                &chain.arms,
+                chain.else_body.as_deref(),
+                is_tail,
+                tail_expected,
+            ),
             Stmt::While { cond, body } => {
                 let b = self.gen_block(body, false, None);
                 format!("while {} {}", self.gen_expr(cond), b)
@@ -539,7 +598,12 @@ impl Codegen {
             } => {
                 self.declare_pattern(pattern);
                 let b = self.gen_block(body, false, None);
-                format!("while let {} = {} {}", self.gen_pattern(pattern), self.gen_expr(expr), b)
+                format!(
+                    "while let {} = {} {}",
+                    self.gen_pattern(pattern),
+                    self.gen_expr(expr),
+                    b
+                )
             }
             Stmt::For {
                 pattern,
@@ -564,7 +628,10 @@ impl Codegen {
                 }
             }
             Stmt::Break { label, value } => {
-                let l = label.as_ref().map(|l| format!(" '{}", l)).unwrap_or_default();
+                let l = label
+                    .as_ref()
+                    .map(|l| format!(" '{}", l))
+                    .unwrap_or_default();
                 let v = value
                     .as_ref()
                     .map(|v| format!(" {}", self.gen_expr(v)))
@@ -594,7 +661,11 @@ impl Codegen {
                 CondKind::Bool(e) => format!("if {}", self.gen_expr(e)),
                 CondKind::Case { pattern, expr } => {
                     self.declare_pattern(pattern);
-                    format!("if let {} = {}", self.gen_pattern(pattern), self.gen_expr(expr))
+                    format!(
+                        "if let {} = {}",
+                        self.gen_pattern(pattern),
+                        self.gen_expr(expr)
+                    )
                 }
             };
             if i == 0 {
@@ -636,7 +707,9 @@ impl Codegen {
         match pat {
             Pattern::Ident(n) if n != "_" && n != "none" => self.declare(n),
             Pattern::Tuple(ps) => ps.iter().for_each(|p| self.declare_pattern(p)),
-            Pattern::TupleStruct { elems, .. } => elems.iter().for_each(|p| self.declare_pattern(p)),
+            Pattern::TupleStruct { elems, .. } => {
+                elems.iter().for_each(|p| self.declare_pattern(p))
+            }
             Pattern::Or(ps) => ps.iter().for_each(|p| self.declare_pattern(p)),
             Pattern::Binding { pattern, name } => {
                 self.declare(name);
@@ -709,7 +782,9 @@ impl Codegen {
         let owned_string = expected.map(is_owned_string).unwrap_or(false);
         if owned_string {
             match e {
-                Expr::Str(_) | Expr::RawStr(_) => return format!("{}.to_string()", self.gen_expr(e)),
+                Expr::Str(_) | Expr::RawStr(_) => {
+                    return format!("{}.to_string()", self.gen_expr(e))
+                }
                 Expr::If(ie) => {
                     return self.gen_if(&ie.arms, Some(&ie.else_body), true, expected);
                 }
@@ -983,7 +1058,11 @@ impl Codegen {
 
     fn gen_struct_lit(&mut self, callee: &Expr, args: &[Arg]) -> String {
         let (type_code, _) = self.gen_place(callee);
-        let simple = type_code.rsplit("::").next().unwrap_or(&type_code).to_string();
+        let simple = type_code
+            .rsplit("::")
+            .next()
+            .unwrap_or(&type_code)
+            .to_string();
         let fields = self.struct_fields.get(&simple).cloned();
         let parts: Vec<String> = args
             .iter()
@@ -993,7 +1072,11 @@ impl Codegen {
                         .as_ref()
                         .and_then(|fs| fs.iter().find(|f| &f.name == name))
                         .map(|f| f.ty.clone());
-                    Some(format!("{}: {}", name, self.gen_expr_coerced(value, expected.as_ref())))
+                    Some(format!(
+                        "{}: {}",
+                        name,
+                        self.gen_expr_coerced(value, expected.as_ref())
+                    ))
                 }
                 Arg::Positional(_) => None,
             })
@@ -1095,7 +1178,9 @@ fn binop_prec(op: BinaryOp) -> u8 {
     match op {
         BinaryOp::Or => 1,
         BinaryOp::And => 2,
-        BinaryOp::Eq | BinaryOp::Ne | BinaryOp::Lt | BinaryOp::Gt | BinaryOp::Le | BinaryOp::Ge => 3,
+        BinaryOp::Eq | BinaryOp::Ne | BinaryOp::Lt | BinaryOp::Gt | BinaryOp::Le | BinaryOp::Ge => {
+            3
+        }
         BinaryOp::Add | BinaryOp::Sub => 4,
         BinaryOp::Mul | BinaryOp::Div | BinaryOp::Rem => 5,
     }

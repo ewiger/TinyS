@@ -1,0 +1,8 @@
+// Deliberately broken, and deliberately still here.
+//
+// `exclude = ["scratch", "*_wip.sn"]` in tinys.toml keeps this directory out of
+// the module tree, so the package builds even though this file does not compile.
+// Delete the exclude entry and `tinys run ../app.sn` starts failing here.
+
+def half_written(x: i32) -> i32:
+    return x + "this is not a number"

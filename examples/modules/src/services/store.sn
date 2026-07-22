@@ -1,0 +1,20 @@
+// A submodule of `services`, reachable as `crate::services::store`.
+//
+// Imports are always absolute from the crate root, so this file names `models`
+// exactly the way `app.sn` does — there is no relative-import form.
+
+from models import User
+
+pub def seed() -> list[User]:
+    return [
+        User.new(1, "Ada", true),
+        User.new(2, "Grace", false),
+        User.new(3, "Alan", true),
+    ]
+
+pub def visible(users: ref list[User]) -> u64:
+    mut count: u64 = 0
+    for user in users:
+        if user.active:
+            count = count + 1
+    return count

@@ -1,0 +1,18 @@
+// Data shared across the package.
+//
+// Items are private to their module by default, exactly as in Rust — `pub` is
+// what makes them reachable from `app.sn` and `services/`.
+
+#[derive(Debug, Clone)]
+pub struct User:
+    pub id: u64
+    pub name: str
+    pub active: bool
+
+impl User:
+
+    pub def new(id: u64, name: ref str, active: bool) -> User:
+        return User(id=id, name=name.to_string(), active=active)
+
+pub def is_visible(user: ref User) -> bool:
+    return user.active

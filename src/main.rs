@@ -11,10 +11,12 @@
 //! under `target/tinys-generated/` and drive `cargo`, so programs can depend on
 //! crates declared in `tinys.toml`.
 
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::process::{Command, ExitCode};
 
 use tinys::manifest::{references_crate, Manifest};
+use tinys::modules::Sources;
 
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
@@ -81,16 +83,17 @@ fn run_command(command: &str, file: &str, rest: &[String]) -> ExitCode {
         }
     };
 
-    let source = match std::fs::read_to_string(file) {
-        Ok(s) => s,
+    let manifest = match Manifest::discover(Path::new(file)) {
+        Ok(m) => m,
         Err(e) => {
-            eprintln!("error: cannot read `{}`: {}", file, e);
+            eprintln!("error: {}", e);
             return ExitCode::FAILURE;
         }
     };
 
-    let rust = match tinys::compile_to_rust(&source, file) {
-        Ok(r) => r,
+    // The entry file is the crate root; any modules beside it come along.
+    let sources = match Sources::compile(Path::new(file), manifest.as_ref()) {
+        Ok(s) => s,
         Err(e) => {
             eprintln!("{}", e);
             return ExitCode::FAILURE;
@@ -98,11 +101,11 @@ fn run_command(command: &str, file: &str, rest: &[String]) -> ExitCode {
     };
 
     if command == "emit-rust" {
-        print!("{}", rust);
+        print!("{}", sources.render());
         return ExitCode::SUCCESS;
     }
 
-    let project = match Project::prepare(&rust, file, release) {
+    let project = match Project::prepare(&sources, file, manifest.as_ref(), release) {
         Ok(p) => p,
         Err(code) => return code,
     };
@@ -167,16 +170,14 @@ struct Project {
 
 impl Project {
     /// Materialise the generated Rust as a Cargo package next to its source.
-    fn prepare(rust: &str, file: &str, release: bool) -> Result<Project, ExitCode> {
+    fn prepare(
+        sources: &Sources,
+        file: &str,
+        manifest: Option<&Manifest>,
+        release: bool,
+    ) -> Result<Project, ExitCode> {
         let source = Path::new(file);
-        let manifest = match Manifest::discover(source) {
-            Ok(m) => m,
-            Err(e) => {
-                eprintln!("error: {}", e);
-                return Err(ExitCode::FAILURE);
-            }
-        };
-        if let Some(m) = &manifest {
+        if let Some(m) = manifest {
             for section in &m.ignored {
                 eprintln!(
                     "warning: `{}` ignores unsupported section `[{}]`",
@@ -188,7 +189,7 @@ impl Project {
 
         // The package root is wherever `tinys.toml` lives, so generated output
         // lands in one `target/` for the whole package.
-        let root = match &manifest {
+        let root = match manifest {
             Some(m) => m.dir.clone(),
             None => source
                 .parent()
@@ -204,10 +205,7 @@ impl Project {
             .unwrap_or("out")
             .to_string();
         // `src/main.sn` is the package's entry point, so it takes the package name.
-        let bin_name = match (
-            &stem[..],
-            manifest.as_ref().and_then(|m| m.package.name.clone()),
-        ) {
+        let bin_name = match (&stem[..], manifest.and_then(|m| m.package.name.clone())) {
             ("main", Some(pkg)) => crate_name(&pkg),
             _ => crate_name(&stem),
         };
@@ -220,9 +218,19 @@ impl Project {
             source: file.to_string(),
         };
 
-        let cargo_toml = project.cargo_toml(rust, manifest.as_ref());
+        let cargo_toml = project.cargo_toml(&sources.all_rust(), manifest);
         write_if_changed(&project.dir.join("Cargo.toml"), &cargo_toml)?;
-        write_if_changed(&project.dir.join("src").join("main.rs"), rust)?;
+
+        let src_dir = project.dir.join("src");
+        let mut written = HashSet::new();
+        for generated in &sources.files {
+            let path = src_dir.join(&generated.path);
+            write_if_changed(&path, &generated.rust)?;
+            written.insert(path);
+        }
+        // A module that was renamed or deleted leaves a stale `.rs` behind, and
+        // `foo.rs` beside `foo/mod.rs` is an error rustc reports before ours.
+        prune_generated(&src_dir, &written)?;
         Ok(project)
     }
 
@@ -284,6 +292,11 @@ impl Project {
             .env("CARGO_TARGET_DIR", &self.target_dir)
             // Do not inherit the jobserver of a `cargo` that spawned us.
             .env_remove("CARGO_MAKEFLAGS");
+        if subcommand == "check" {
+            // `#[cfg(test)]` code — every `_test.sn` module — is invisible to a
+            // plain `cargo check`.
+            cmd.arg("--all-targets");
+        }
         if self.release {
             cmd.arg("--release");
         }
@@ -351,6 +364,27 @@ fn write_if_changed(path: &Path, contents: &str) -> Result<(), ExitCode> {
     if let Err(e) = std::fs::write(path, contents) {
         eprintln!("error: cannot write `{}`: {}", path.display(), e);
         return Err(ExitCode::FAILURE);
+    }
+    Ok(())
+}
+
+/// Delete generated `.rs` files that this build did not write, then any
+/// directories they leave empty.
+fn prune_generated(dir: &Path, keep: &HashSet<PathBuf>) -> Result<(), ExitCode> {
+    let Ok(listing) = std::fs::read_dir(dir) else {
+        return Ok(());
+    };
+    for item in listing.flatten() {
+        let path = item.path();
+        if path.is_dir() {
+            prune_generated(&path, keep)?;
+            // `read_dir` on a directory we just emptied yields nothing.
+            if std::fs::read_dir(&path).is_ok_and(|mut d| d.next().is_none()) {
+                let _ = std::fs::remove_dir(&path);
+            }
+        } else if path.extension().and_then(|e| e.to_str()) == Some("rs") && !keep.contains(&path) {
+            let _ = std::fs::remove_file(&path);
+        }
     }
     Ok(())
 }

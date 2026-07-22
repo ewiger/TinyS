@@ -31,6 +31,8 @@ These features compile and run through `tinys run` / `tinys build`, which drive
 - [x] `print` / `format` / `debug` macros
 - [x] `#[derive(...)]` and other attributes passing through to Rust
 - [x] Cargo-backed builds driven by `tinys.toml` (dependency resolution)
+- [x] Multi-file modules derived from the `src/` file tree — no `mod` keyword
+- [x] Colocated `#[cfg(test)]` modules through the `_test.sn` suffix
 - [x] Rust-crate interop through the `rust` / `macro` roots (e.g. `serde` / `serde_json`) — see [`json_user.sn`](../examples/index.md#rust-interop)
 
 ## Designed — in progress
@@ -39,7 +41,8 @@ Specified in the language reference and used throughout this manual, but not yet
 fully wired into the compiler. Verify with `tinys emit-rust` before relying on a
 specific form:
 
-- [ ] Multi-file module discovery
+- [ ] Library targets (`lib.rs`) and `export` re-exports (`pub use`)
+- [ ] Relative imports (`from . import x`)
 - [ ] `dict` / `set` literals and `array` types (beyond `list` literals)
 - [ ] Lifetime syntax coverage across all positions
 - [ ] `async def` / `.await` (depends on runtime crates → Cargo builds)

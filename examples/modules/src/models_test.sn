@@ -1,0 +1,16 @@
+// A `_test.sn` file is declared `#[cfg(test)]`, so it is compiled only by
+// `cargo test`. This is how TinyS expresses Rust's colocated `mod tests`
+// without a `mod` keyword.
+
+from models import User, is_visible
+
+#[test]
+def new_user_keeps_its_fields() -> void:
+    user = User.new(7, "Ada", true)
+    assert(user.id == 7)
+    assert(is_visible(ref user))
+
+#[test]
+def inactive_users_are_hidden() -> void:
+    user = User.new(8, "Grace", false)
+    assert(not is_visible(ref user))

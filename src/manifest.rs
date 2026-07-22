@@ -63,6 +63,8 @@ pub struct Manifest {
     pub package: Package,
     pub dependencies: Vec<Dependency>,
     pub passthrough: Vec<Section>,
+    /// `[package] exclude` — file patterns kept out of the module tree.
+    pub exclude: Vec<String>,
     /// Section headers TinyS does not understand yet.
     pub ignored: Vec<String>,
 }
@@ -102,6 +104,7 @@ impl Manifest {
             package: Package::default(),
             dependencies: Vec::new(),
             passthrough: Vec::new(),
+            exclude: Vec::new(),
             ignored: Vec::new(),
         };
 
@@ -166,6 +169,7 @@ impl Manifest {
                     "name" => manifest.package.name = Some(unquote(&value)),
                     "version" => manifest.package.version = Some(unquote(&value)),
                     "edition" => manifest.package.edition = Some(unquote(&value)),
+                    "exclude" => manifest.exclude = parse_string_array(&value),
                     _ => {}
                 },
                 "dependencies" => manifest.dependencies.push(Dependency {
@@ -311,6 +315,22 @@ fn unquote(value: &str) -> String {
         .trim_matches('"')
         .trim_matches('\'')
         .to_string()
+}
+
+/// `["a.sn", "b/*.sn"]` → the quoted entries. Anything else yields nothing.
+fn parse_string_array(value: &str) -> Vec<String> {
+    let Some(inner) = value
+        .trim()
+        .strip_prefix('[')
+        .and_then(|s| s.strip_suffix(']'))
+    else {
+        return Vec::new();
+    };
+    inner
+        .split(',')
+        .map(|part| unquote(part.trim()))
+        .filter(|part| !part.is_empty())
+        .collect()
 }
 
 /// Drop a trailing `# comment`, ignoring `#` inside strings.

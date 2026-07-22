@@ -15,6 +15,7 @@ pub mod codegen;
 pub mod diagnostics;
 pub mod lexer;
 pub mod manifest;
+pub mod modules;
 pub mod parser;
 
 pub use diagnostics::TinysError;

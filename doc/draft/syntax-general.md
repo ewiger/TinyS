@@ -739,29 +739,65 @@ Since TinyS otherwise uses square brackets for parameters, `pub[crate]` fits its
 
 ## 22. Module definitions
 
-Imports were defined, but local module declaration was not.
-
-A file-based module system may be enough initially:
+**Resolved: modules are derived entirely from files. TinyS has no `mod` keyword,
+not even as an optional form.**
 
 ```text
 src/
-    main.sn
-    models.sn
+    app.sn              the file you build — the crate root
+    models.sn           → crate::models
+    models_test.sn      → crate::models_test, declared #[cfg(test)]
     services/
-        mod.sn
-        database.sn
+        mod.sn          → crate::services
+        database.sn     → crate::services::database
 ```
 
-Alternatively:
+The compiler walks `src/`, derives the tree, and writes the `mod` declarations
+itself. This is the important usability improvement over Rust: a file is a
+module because it exists, the way it works in Python and Go, and no declaration
+can fall out of sync with the filesystem.
+
+Rejecting the alternative — `mod models` as an optional declaration — is
+deliberate. Two ways to say one thing would force the compiler to reconcile
+hand-written declarations against what it found on disk, for no expressive gain.
+
+### What `mod` is still needed for, and what replaces it
+
+Rust's `mod` does three jobs. Only the first is about files:
+
+1. **Attaching a file to the tree.** Fully derived from the directory walk.
+2. **Grouping items inline** (`#[cfg(test)] mod tests`). Replaced by the
+   `_test.sn` suffix: such a file is declared `#[cfg(test)]`, giving colocated
+   tests without a keyword.
+3. **Carrying attributes** (`#[cfg(unix)] mod platform`). Use an inner attribute
+   at the top of the module's own file:
 
 ```tinys
-mod models
-mod services.database
+#![cfg(unix)]
+
+pub def open_tty() -> void:
+    ...
 ```
 
-But TinyS could derive modules entirely from files and avoid explicit `mod` in ordinary code.
+### Discovery rules
 
-This is an important usability improvement over Rust.
+* `src/` is the switch. A package with `tinys.toml` and no `src/` is a directory
+  of single-file programs, which is how a flat `examples/` layout keeps working.
+* The file you build is the crate root, and is never also a module. `main.sn` is
+  therefore not required — any `.sn` file with a `def main()` can be the entry.
+* A directory is a module. Its own source is `mod.sn`; a directory without one
+  still exists as a module holding its children.
+* `foo.sn` beside `foo/` is an error — one module name, two sources.
+* Synthesized declarations are always `pub mod`. The `pub` a user writes on
+  *items* is what defines the public surface; a private module would make that
+  a lie.
+* Imports are absolute from the crate root. There is no relative form yet
+  (`from . import x`), matching Python 3's own default.
+* `[package] exclude` in `tinys.toml` keeps files out of the tree. `*` matches
+  within one path segment, and naming a directory excludes everything under it.
+
+Mutual imports between modules are fine — the whole tree is one compilation
+unit, so TinyS inherits Rust's freedom here rather than Python's import cycles.
 
 ---
 
@@ -804,6 +840,11 @@ Likely rules:
 * an application entry point maps to `main.rs`;
 * multiple binaries can be declared in `tinys.toml`;
 * workspace members map to Cargo workspace members.
+
+Implemented so far: `tinys.toml` defines the package, `[dependencies]` is
+resolved through Cargo, and `src/` defines the module tree (§22). Each `.sn`
+entry point currently generates its own Cargo package with a `main.rs`; library
+targets (`lib.rs`) and multiple declared binaries are still open.
 
 ---
 

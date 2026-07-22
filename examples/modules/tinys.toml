@@ -1,0 +1,19 @@
+# A multi-file TinyS package.
+#
+# The presence of `src/` turns on module discovery: every `.sn` file under it
+# becomes a module, and TinyS writes the `mod` declarations itself. There is no
+# `mod` keyword — the file tree *is* the module tree.
+#
+#   src/app.sn              the file you build — the crate root
+#   src/models.sn           → crate::models
+#   src/models_test.sn      → crate::models_test, declared #[cfg(test)]
+#   src/services/mod.sn     → crate::services
+#   src/services/store.sn   → crate::services::store
+
+[package]
+name = "modules"
+version = "0.1.0"
+
+# Files kept out of the module tree. `*` matches within one path segment, and
+# naming a directory excludes everything under it.
+exclude = ["scratch", "*_wip.sn"]

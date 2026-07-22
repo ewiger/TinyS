@@ -2,9 +2,11 @@
 
 Every program below is a real, standalone `.sn` file in the repository's
 [`examples/`](https://github.com/ewiger/TinyS/tree/main/examples) directory. All
-of them **compile and run today**; the first ten are pure-`std`, and the interop
-example pulls its crates from
-[`examples/tinys.toml`](https://github.com/ewiger/TinyS/blob/main/examples/tinys.toml).
+of them **compile and run today**; the single-file ones are pure-`std`, the
+interop example pulls its crates from
+[`examples/tinys.toml`](https://github.com/ewiger/TinyS/blob/main/examples/tinys.toml),
+and [`examples/modules/`](https://github.com/ewiger/TinyS/tree/main/examples/modules)
+is a multi-file package.
 
 Run any of them:
 
@@ -330,3 +332,50 @@ def main() -> Result[void, json.Error]:
 ```
 
 [:octicons-file-code-16: examples/json_user.sn](https://github.com/ewiger/TinyS/blob/main/examples/json_user.sn) · [Advanced → Rust interoperability](../advanced/interop.md)
+
+## Multi-file package
+
+A package split across files. Nothing here declares a module — the compiler
+derives the tree from `src/` and writes the `mod` declarations itself.
+
+```text
+examples/modules/
+├── tinys.toml              exclude = ["scratch", "*_wip.sn"]
+└── src/
+    ├── app.sn              the crate root
+    ├── models.sn           →  crate::models
+    ├── models_test.sn      →  crate::models_test, #[cfg(test)]
+    ├── scratch/broken.sn   excluded, and deliberately does not compile
+    └── services/
+        ├── mod.sn          →  crate::services
+        └── store.sn        →  crate::services::store
+```
+
+```python
+# src/app.sn
+from macro import assert, format
+from models import User
+from services import describe
+import services.store as store
+
+def main() -> void:
+    users = store.seed()
+
+    for user in ref users:
+        print(describe(user))
+
+    print(format("{} of {} are active", store.visible(ref users), users.len()))
+```
+
+```bash
+tinys run examples/modules/src/app.sn
+```
+
+```text
+#1 Ada (active)
+#2 Grace (inactive)
+#3 Alan (active)
+2 of 3 are active
+```
+
+[:octicons-file-code-16: examples/modules/](https://github.com/ewiger/TinyS/tree/main/examples/modules) · [Guide → Modules & imports](../guide/modules.md)

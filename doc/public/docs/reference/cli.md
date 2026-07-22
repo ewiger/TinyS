@@ -76,11 +76,18 @@ file:
 target/
 └── tinys-generated/
     ├── hello/
-    │   ├── Cargo.toml      # generated from tinys.toml
-    │   └── src/main.rs     # generated Rust
-    └── cargo-target/       # Cargo's build directory, shared by the package
-        └── debug/hello     # compiled binary
+    │   ├── Cargo.toml          # generated from tinys.toml
+    │   └── src/
+    │       ├── main.rs         # the entry .sn file
+    │       ├── models.rs       # one file per module, mirroring src/
+    │       └── services/mod.rs
+    └── cargo-target/           # Cargo's build directory, shared by the package
+        └── debug/hello         # compiled binary
 ```
+
+The module tree mirrors your `src/` layout one file at a time, so rustc errors
+stay local to the module they came from. See
+[Modules & imports](../guide/modules.md).
 
 Only the crates a program imports are copied into the generated `Cargo.toml`, so
 a `tinys.toml` that declares `serde` costs nothing for programs that do not use

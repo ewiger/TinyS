@@ -1,0 +1,10 @@
+// A directory module: `services/mod.sn` is the module's own source, and every
+// other `.sn` file beside it becomes a submodule.
+
+from models import User
+
+pub def describe(user: ref User) -> str:
+    return if user.active:
+        format("#{} {} (active)", user.id, user.name)
+    else:
+        format("#{} {} (inactive)", user.id, user.name)

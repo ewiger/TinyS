@@ -55,8 +55,8 @@ cargo test                                 # lexer, codegen, and end-to-end test
 
 The syntax and semantics are still evolving, and TinyS is not yet ready for
 production use. Each `.sn` file is compiled as its own Cargo package, with
-dependencies resolved from the nearest `tinys.toml`; multi-file module discovery
-is still on the roadmap.
+dependencies resolved from the nearest `tinys.toml` and modules derived from the
+`src/` file tree; library targets and re-exports are still on the roadmap.
 
 ## Design goals
 
@@ -958,23 +958,34 @@ manifest, so dependency-free programs still build without a network.
 
 The dependency model should remain close to Cargo so that existing Rust documentation and tooling stay useful.
 
-## Proposed project layout
+## Project layout
 
 ```text
 example/
 ├── tinys.toml
 ├── src/
-│   ├── main.sn
-│   ├── models.sn
+│   ├── app.sn              the file you build — the crate root
+│   ├── models.sn           → crate::models
+│   ├── models_test.sn      → crate::models_test, declared #[cfg(test)]
 │   └── services/
-│       ├── mod.sn
-│       └── database.sn
+│       ├── mod.sn          → crate::services
+│       └── database.sn     → crate::services::database
 └── target/
     └── tinys-generated/
         └── ...
 ```
 
 One TinyS package maps approximately to one Cargo package.
+
+**TinyS has no `mod` keyword.** The compiler walks `src/`, derives the module
+tree from the file tree, and writes Rust's `mod` declarations itself — a file is
+a module because it exists. The presence of `src/` is what turns discovery on;
+a package without one is a directory of independent single-file programs. The
+file you build is the crate root and is never also a module, so `main.sn` is not
+required.
+
+A file named `*_test.sn` is declared `#[cfg(test)]`, which is how colocated tests
+work without a keyword. `[package] exclude` keeps files out of the tree.
 
 Applications generate `main.rs`. Libraries generate `lib.rs`.
 
